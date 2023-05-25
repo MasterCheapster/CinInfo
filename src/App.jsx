@@ -5,10 +5,21 @@ import { BACKDROP_BASE_URL } from "./config";
 import { TVShowDetail } from "./components/TVShowDetail/TVShowDetail";
 import { Logo } from "./components/Logo/Logo";
 import logoImg from "./assets/images/logo.png";
-import { TVShowListItem } from "./components/TVShowListItem/TVShowListItem";
-
+import { TVShowList } from "./components/TVShowList/TVShowList";
 export function App() {
   const [currentTVShow, setCurrentTVShow] = useState();
+  const [recommendationList, setRecommendationList] = useState([]);
+
+  useEffect(() => {
+    fetchPopulars();
+  }, []);
+
+  useEffect(() => {
+    console.log("current tv show has changed");
+    if (currentTVShow) {
+      fetchRecommendations(currentTVShow.id);
+    }
+  }, [currentTVShow]);
 
   async function fetchPopulars() {
     const popularTVShowList = await TVShowAPI.fetchPopulars();
@@ -16,10 +27,21 @@ export function App() {
       setCurrentTVShow(popularTVShowList[0]);
     }
   }
+  async function fetchRecommendations(tvShowId) {
+    const recommendationListResp = await TVShowAPI.fetchRecommendations(
+      tvShowId
+    );
+    if (recommendationListResp.length > 0) {
+      setRecommendationList(recommendationListResp.slice(0, 10));
+    }
+  }
+  function updateCurrentTvShow(tvShow) {
+    setCurrentTVShow(tvShow);
+  }
 
-  useEffect(() => {
-    fetchPopulars();
-  }, []);
+  function updateCurrentTVShow(tvShow) {
+    setCurrentTVShow(tvShow);
+  }
 
   return (
     <div
@@ -50,26 +72,10 @@ export function App() {
       </div>
       <div className={s.recommended_shows}>
         {currentTVShow && (
-          <>
-            <TVShowListItem
-              tvShow={currentTVShow}
-              onClick={(tvShow) => {
-                console.log("i have been clicked", tvShow);
-              }}
-            />
-            <TVShowListItem
-              tvShow={currentTVShow}
-              onClick={(tvShow) => {
-                console.log("i have been clicked", tvShow);
-              }}
-            />
-            <TVShowListItem
-              tvShow={currentTVShow}
-              onClick={(tvShow) => {
-                console.log("i have been clicked", tvShow);
-              }}
-            />
-          </>
+          <TVShowList
+            onClickItem={updateCurrentTVShow}
+            tvShowList={recommendationList}
+          />
         )}
       </div>
     </div>
